@@ -424,23 +424,26 @@ typedef struct{
 }data_t;
 
 void init(data_t *data,const char *interface,int save_result,int print_debug){
-	const char *oneshot_dir=get_oneshot_dir();
-	sprintf(data->sessions_dir,"%s/sessions",oneshot_dir);
-	sprintf(data->pixiewps_dir,"%s/pixiewps",oneshot_dir);
+	const char *oneshot_dir = get_oneshot_dir();
+	mkdir(oneshot_dir, 0777);  // Create base directory if missing
+	sprintf(data->sessions_dir, "%s/sessions", oneshot_dir);
+	sprintf(data->pixiewps_dir, "%s/pixiewps", oneshot_dir);
 	sprintf(data->reports_dir, "%s/reports", oneshot_dir);
-	mkdir(data->sessions_dir,0700);
-	mkdir(data->pixiewps_dir,0700);
-	mkdir(data->reports_dir,0700);
+	mkdir(data->sessions_dir, 0777);
+	mkdir(data->pixiewps_dir, 0777);
+	mkdir(data->reports_dir, 0777);
 	data->save_result=save_result;
 	data->print_debug=print_debug;
 	data->interface=interface;
 	data->wpas=run_wpa_supplicant(&data->ctrl,interface);
 }
+
 void credential_print(pin_t pin,const char *psk,const char *essid){
 	printf("[+] WPS PIN: %08u\n",pin);
 	printf("[+] WPA PSK: %s\n",  psk);
 	printf("[+] AP SSID: %s\n",  essid);
 }
+
 void save_result(data_t *data,mac_t bssid,const char *essid,pin_t pin,const char *psk){
 	time_t now=time(NULL);
 	struct tm *timeinfo=localtime(&now);
@@ -448,14 +451,14 @@ void save_result(data_t *data,mac_t bssid,const char *essid,pin_t pin,const char
 	strftime(time_str,128,"%d.%m.%Y %H:%M",timeinfo);
 	const char *bssid_str=mac2str(bssid);
 	char path1[128],path2[128];
-	sprintf(path1,"%s/stored.csv",data->sessions_dir);
-	sprintf(path2,"%s/stored.txt",data->sessions_dir);
+	sprintf(path1,"%s/stored.csv",data->reports_dir);
+	sprintf(path2,"%s/stored.txt",data->reports_dir);
 
 	FILE *file=fopen(path1,"a");
 	if(file){
 		fseek(file,0,SEEK_END);
 		if(ftell(file)==0)
-			fprintf(file,"\"Date\",\"BSSID\",\"ESSID\",\"WPS PIN\",\"WPA PSK\"");
+			fprintf(file,"\"Date\",\"BSSID\",\"ESSID\",\"WPS PIN\",\"WPA PSK\"\n");
 		fprintf(file,"\"%s\",\"%s\",\"%s\",\"%08u\",\"%s\"\n",
 			time_str,bssid_str,essid,pin,psk);
 		fclose(file);
