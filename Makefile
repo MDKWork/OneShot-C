@@ -1,6 +1,14 @@
-CC=gcc
-CFLAGS=-s -O3
-all:
-	$(CC) oneshot.c $(CFLAGS) -o oneshot
+CC      := gcc
+CFLAGS  := -O3 -s -Wall -Wextra -pedantic
+TARGET  := oneshot
+SRC     := oneshot.c
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
+
 clean:
-	rm oneshot
+	rm -f $(TARGET)
