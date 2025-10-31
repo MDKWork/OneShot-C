@@ -81,7 +81,28 @@ pin_t pinDLink(mac_t mac) {
   return pin;
 }
 pin_t pinDLink1(mac_t mac) { return pinDLink(mac + 1); }
-pin_t pinASUS(mac_t mac) {}
+pin_t pinASUS(mac_t mac) {
+    if (mac == NULL) return 0;
+
+    unsigned int vals[6];
+    if (sscanf(mac, "%2x:%2x:%2x:%2x:%2x:%2x",
+               &vals[0], &vals[1], &vals[2], &vals[3], &vals[4], &vals[5]) != 6)
+        return 0;
+
+    int b[6];
+    for (int i = 0; i < 6; ++i) b[i] = (int)vals[i];
+
+    int sum_b_1_to_5 = b[1] + b[2] + b[3] + b[4] + b[5];
+    pin_t pin = 0;
+
+    for (int i = 0; i < 7; ++i) {
+        int divisor = 10 - ((i + sum_b_1_to_5) % 7);
+        int digit = (b[i % 6] + b[5]) % divisor;
+        pin = pin * 10 + digit;
+    }
+
+    return pin;
+}
 pin_t pinAirocon(mac_t mac) {
   unsigned char b[6];
   int byte;
